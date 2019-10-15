@@ -1,0 +1,15 @@
+title: InfoMessage
+type: object
+description: InfoMessage
+x-examples: {}
+properties:
+  text:
+    type: string
+    description: Текст сообщения
+  type:
+    type: string
+    default: INFO
+    description: INFO
+required:
+  - text
+  - type

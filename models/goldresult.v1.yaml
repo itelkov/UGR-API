@@ -1,0 +1,8 @@
+title: GoldResult
+type: object
+properties:
+  id:
+    $ref: ./warning-message.v1.yaml
+  gold_id:
+    type: integer
+    description: ID дубля пользователя с “золотой” записью

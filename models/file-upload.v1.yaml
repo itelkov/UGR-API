@@ -1,0 +1,30 @@
+title: FileUpload
+type: object
+x-examples: {}
+description: Загрузка файла
+x-tags:
+  - ugr
+  - gold
+  - migration
+properties:
+  id:
+    type: integer
+  completed:
+    type: boolean
+  read_end:
+    type: boolean
+  count_read_error:
+    type: integer
+  count_read_success:
+    type: integer
+  uploaded:
+    type: string
+    description: время загрузки
+  filename:
+    type: string
+  employee_id:
+    type: string
+  downloaded:
+    type: boolean
+  count_rejected:
+    type: integer

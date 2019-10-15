@@ -1,0 +1,57 @@
+title: User
+type: object
+description: Фильтр по пользователям
+properties:
+  id:
+    description: ' набор идентификаторов пользователей UGR'
+    type: integer
+  doc_expired_date:
+    type: string
+  doc_issue_date:
+    type: string
+  doc_issuer:
+    type: string
+  doc_country:
+    type: string
+  doc_number:
+    type: string
+  doc_series:
+    type: string
+  doc_type:
+    type: string
+  birth_day:
+    type: string
+  gender:
+    type: string
+  status:
+    type: string
+    description: |-
+      статус пользователя:
+      PROCESSED - на обработку (не кандидат)
+      CANDIDATE - кандидат
+      GOLD - "золотая" запись пользователя
+      MERGED - объединен с "золотой" записью пользователя
+  system_user_id:
+    type: string
+    description: ID пользователя в системе ДБО
+  system_id:
+    type: string
+    description: Наименование системы ДБО
+  snils:
+    type: string
+  citizenship:
+    type: string
+  birth_place:
+    type: string
+  fio:
+    type: string
+  certificate:
+    type: array
+    items:
+      $ref: ./certificate.v1.yaml
+  department:
+    $ref: ./client.v1.yaml
+  childs:
+    type: array
+    items:
+      $ref: ./child.v1.yaml

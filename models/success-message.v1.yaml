@@ -1,0 +1,15 @@
+title: SuccessMessage
+type: object
+description: SuccessMessage
+x-examples: {}
+properties:
+  text:
+    type: string
+    description: Текст сообщения
+  type:
+    type: string
+    default: SUCCESS
+    description: SUCCESS
+required:
+  - text
+  - type

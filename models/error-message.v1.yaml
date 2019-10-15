@@ -1,0 +1,15 @@
+title: ErrorMessage
+type: object
+description: ErrorMessage
+x-examples: {}
+properties:
+  text:
+    type: string
+    description: Текст сообщения
+  type:
+    type: string
+    default: ERROR
+    description: ERROR
+required:
+  - text
+  - type

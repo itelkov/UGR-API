@@ -1,0 +1,16 @@
+title: Certificate
+type: object
+properties:
+  id:
+    type: integer
+  certificate_type:
+    type: string
+    enum:
+      - ЮЛ
+      - ФЛ
+      - ПЭП
+  cerificate_inn:
+    type: string
+  certificate_kpp:
+    type: string
+description: Сертификат или ПЭП клиента пользователя UGR

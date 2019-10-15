@@ -1,0 +1,11 @@
+title: Client
+type: object
+properties:
+  id:
+    type: integer
+  ugr_user_id:
+    type: integer
+  department:
+    type: string
+  inn:
+    type: string

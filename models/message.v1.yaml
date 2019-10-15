@@ -1,0 +1,20 @@
+title: Message
+type: object
+x-examples: {}
+properties:
+  type:
+    type: string
+    default: INFO
+    enum:
+      - SUCCESS - SuccessMessage
+      - ERROR - ErrorMessage
+      - WARNING - WarningMessage
+      - INFO
+    description: Тип сообщения
+  text:
+    type: string
+    description: Текст сообщения
+required:
+  - type
+  - text
+description: Message

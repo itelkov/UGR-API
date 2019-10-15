@@ -1,0 +1,850 @@
+openapi: 3.0.0
+info:
+  title: UGR
+  version: '0.1'
+  description: ''
+servers:
+  - url: /user-gold-record
+paths:
+  '/upload/{employee_id}':
+    parameters:
+      name: employee_id
+      in: path
+      required: true
+      type: string
+      undefined:
+        schema:
+          type: string
+        name: ''
+        in: path
+        required: true
+    get:
+      summary: Вывод состояния обработки загрузок
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: ./models/file-upload.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+      parameters: []
+      description: 'Вывод состояния обработки загрузок из ugr_user по идентификатору сотрудника, совершившего загрузку.'
+  /upload:
+    post:
+      summary: Загрузка XLSX-файла
+      tags:
+        - ugr
+        - gold
+        - migration
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: ugr_employee_id
+          description: ''
+          required: true
+      description: "Загрузка, сохранение данных и обработка записей в единой транзакции.\nПроцесс обработки:\n1. Все строки сохраняются в табл. ugr_record. \n2. В случае новой записи применяется процедура «Создание пользователя UGR»\n3. В случае наличия ugr_user.id применяется процедура «Дополнение пользователя UGR»\n4. В случае наличия всех основных данных (ФИО, тип ДУЛ, серия, номер) применяется процедура «Назначение кандидатом на “золотую” запись пользователя»."
+      requestBody:
+        description: ''
+    parameters: []
+  '/file/upload/{upload_id}':
+    parameters:
+      - type: string
+        name: upload_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: идентификатор загрузки из табл. ugr_upload
+    get:
+      summary: Выгрузка отклоненных на дополнение данных по результатам загрузки
+      tags: []
+      responses:
+        '200':
+          description: XLSX-file
+          headers:
+            'Content-Disposition: attachment; filename="file.xlsx"':
+              schema:
+                type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+        '':
+          description: ''
+      description: "Выгрузка в XLSX-файл загруженных записей из ugr_record по указанному ugr_record.ugr_upload_id, по которым произошло отклонение в результате донаполнения данных по результатам загрузки (ugr_record.ugr_record_status\_= REJECTED)."
+      parameters: []
+  /users/filter:
+    get:
+      summary: Выбор пользователей по фильтру
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: ./models/user.v1.yaml
+      description: 'Выборка записей пользователей из ugr_user, удовлетворяющих фильтру выбора.'
+      parameters:
+        - schema:
+            type: array
+          in: query
+          name: id
+          description: 'набор идентификаторов пользователей UGR '
+        - schema:
+            type: string
+          in: query
+          name: status
+          description: |-
+            статус пользователя:
+            PROCESSED - на обработку (не кандидат)
+            CANDIDATE - кандидат
+            GOLD - "золотая" запись пользователя
+            MERGED - объединен с "золотой" записью пользователя
+        - schema:
+            type: string
+          in: query
+          name: fio
+          description: ФИО
+        - schema:
+            type: string
+          in: query
+          name: gender
+          description: Пол
+        - schema:
+            type: string
+          in: query
+          name: birth_day
+          description: Дата рождения
+        - schema:
+            type: string
+          in: query
+          name: birth_place
+          description: Место рождения
+        - schema:
+            type: string
+          in: query
+          name: citizenship
+          description: Гражданство
+        - schema:
+            type: string
+          in: query
+          name: snils
+          description: СНИЛС
+        - schema:
+            type: string
+          in: query
+          name: doc_type
+        - schema:
+            type: string
+          in: query
+          name: doc_series
+        - schema:
+            type: string
+          in: query
+          name: doc_number
+        - schema:
+            type: string
+          in: query
+          name: doc_country
+        - schema:
+            type: string
+          in: query
+          name: doc_issuer
+        - schema:
+            type: string
+          in: query
+          name: doc_issue_date
+        - schema:
+            type: string
+          in: query
+          name: doc_expired_date
+        - schema:
+            type: string
+          in: query
+          name: department
+          description: Подразделение банка
+        - schema:
+            type: boolean
+          in: query
+          name: empty_department
+          description: флаг - пустые наименования подразделений
+        - schema:
+            type: string
+          in: query
+          name: certificate_inn
+          description: ИНН клиента владельца сертификата/ПЭП
+        - schema:
+            type: string
+          in: query
+          name: certificate_type
+    parameters: []
+  /file/filter:
+    get:
+      summary: Выгрузка пользователей по фильтру
+      tags: []
+      responses:
+        '200':
+          description: OK
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+      parameters:
+        - schema:
+            type: array
+          in: query
+          name: id
+          description: 'набор идентификаторов пользователей UGR '
+        - schema:
+            type: string
+          in: query
+          name: status
+          description: |-
+            статус пользователя:
+            PROCESSED - на обработку (не кандидат)
+            CANDIDATE - кандидат
+            GOLD - "золотая" запись пользователя
+            MERGED - объединен с "золотой" записью пользователя
+        - schema:
+            type: string
+          in: query
+          name: fio
+          description: ФИО
+        - schema:
+            type: string
+          in: query
+          name: gender
+          description: Пол
+        - schema:
+            type: string
+          in: query
+          name: birth_day
+          description: Дата рождения
+        - schema:
+            type: string
+          in: query
+          name: birth_place
+          description: Место рождения
+        - schema:
+            type: string
+          in: query
+          name: citizenship
+          description: Гражданство
+        - schema:
+            type: string
+          in: query
+          name: snils
+          description: СНИЛС
+        - schema:
+            type: string
+          in: query
+          name: doc_type
+        - schema:
+            type: string
+          in: query
+          name: doc_series
+        - schema:
+            type: string
+          in: query
+          name: doc_number
+        - schema:
+            type: string
+          in: query
+          name: doc_country
+        - schema:
+            type: string
+          in: query
+          name: doc_issuer
+        - schema:
+            type: string
+          in: query
+          name: doc_issue_date
+        - schema:
+            type: string
+          in: query
+          name: doc_expired_date
+        - schema:
+            type: string
+          in: query
+          name: department
+          description: Подразделение банка
+        - schema:
+            type: boolean
+          in: query
+          name: empty_department
+          description: флаг - пустые наименования подразделений
+        - schema:
+            type: string
+          in: query
+          name: certificate_inn
+          description: ИНН клиента владельца сертификата/ПЭП
+      description: 'Выгрузка в XLSX-файл пользователей из табл. ugr_user, удовлетворяющих фильтру выбора.'
+    parameters: []
+  /systems:
+    get:
+      summary: Справочник систем ДБО
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      description: Выборка всех доступных систем ДБО
+    parameters: []
+  /certificates:
+    get:
+      summary: Справочник типов сертификатов и ПЭП
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      description: 'Типы сертификатов и ПЭП: "ПЭП", "ЮЛ", "ФЛ"'
+    parameters: []
+  '/user/{id}':
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+        description: идентификатор пользователя UGR
+        schema:
+          type: integer
+    get:
+      summary: Вывод карточки пользователя
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./models/user.v1.yaml
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: id
+          description: идентификатор пользователя UGR
+          required: true
+      description: Выборка записи пользователя из ugr_user по id и дочерних данных из ugr_certificate.
+  '/user/profile/{id}':
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+        description: идентификатор пользователя UGR
+        schema:
+          type: integer
+    post:
+      summary: Обновление карточки пользователя
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: id
+          description: идентификатор пользователя UGR
+        - schema:
+            type: string
+          in: query
+          name: ugr_employee_id
+          description: 'сотрудник, совершающий обновление'
+        - schema:
+            type: string
+          in: query
+          name: fio
+          description: ФИО
+        - schema:
+            type: string
+          in: query
+          name: gender
+          description: Пол
+        - schema:
+            type: string
+          in: query
+          name: birth_day
+          description: Дата рождения
+        - schema:
+            type: string
+          in: query
+          name: birth_place
+          description: Место рождения
+        - schema:
+            type: string
+          in: query
+          name: citizenship
+          description: Гражданство
+        - schema:
+            type: string
+          in: query
+          name: snils
+          description: СНИЛС
+        - schema:
+            type: string
+          in: query
+          name: doc_type
+        - schema:
+            type: string
+          in: query
+          name: doc_series
+        - schema:
+            type: string
+          in: query
+          name: doc_number
+        - schema:
+            type: string
+          in: query
+          name: doc_country
+        - schema:
+            type: string
+          in: query
+          name: doc_issuer
+        - schema:
+            type: string
+          in: query
+          name: doc_issue_date
+        - schema:
+            type: string
+          in: query
+          name: doc_expired_date
+        - schema:
+            type: array
+          in: query
+          name: certificate
+          description: записи из табл. ugr_certificate
+        - schema:
+            type: array
+          in: query
+          name: childs
+          description: потомки из. тпбл. ugr_user + записи из табл. ugr_certificate
+  '/user/{id}/client':
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+        description: идентификатор пользователя UGR
+        schema:
+          type: integer
+    post:
+      summary: Добавление клиента пользователя
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: department
+          description: наименование подразделения из ugr_client
+          required: true
+        - schema:
+            type: string
+          in: query
+          name: inn
+          description: ИНН из ugr_client
+          required: true
+  '/client/{client_id}':
+    parameters:
+      - type: string
+        name: client_id
+        in: path
+        required: true
+        description: идентификатор клиента UGR
+        schema:
+          type: integer
+    delete:
+      summary: Удаление клиента пользователя
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  '/user/{id}/certificate':
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+        description: идентификатор пользователя UGR
+        schema:
+          type: integer
+    post:
+      summary: Добавление сертификата/подписи пользователя
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: certificate_type
+  '/certificate/{certificate_id}':
+    parameters:
+      - type: string
+        name: certificate_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      summary: Удаление сертификата/подписи пользователя
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  '/user/{id}/gold':
+    post:
+      summary: Назначение “золотой” записи
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: ./models/success-message.v1.yaml
+                  - type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - WARNING
+                      message:
+                        $ref: ./models/user.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: идентификатор пользователя UGR
+  '/user/{id}/gold/cancel':
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: идентификатор пользователя UGR
+    post:
+      summary: Снятие “золотой” записи
+      tags: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  '/user/{id}/merge/{gold_id}':
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+        description: 'идентификатор пользователя UGR, который объединяется'
+        schema:
+          type: integer
+      - type: string
+        name: gold_id
+        in: path
+        required: true
+        description: 'идентификатор пользователя UGR с “золотой” записью, с которым объединяется пользователь'
+        schema:
+          type: integer
+    post:
+      summary: Объединение с “золотой” записью
+      tags: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  '/user/{id}/merge/cancel':
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+        description: 'идентификатор пользователя UGR, открепляемого от "золотого"'
+        schema:
+          type: integer
+    post:
+      summary: Отмена объединения с “золотой” записью
+      tags: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: ./models/success-message.v1.yaml
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  /file/gold:
+    get:
+      summary: 'Отчет о созданных "золотых" записях пользователей'
+      tags: []
+      responses:
+        '200':
+          description: XLSX-file
+          headers:
+            'Content-Disposition: attachment; filename="file.xlsx"':
+              schema:
+                type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  /file/merged:
+    get:
+      summary: Отчет об объединениях пользователей
+      tags: []
+      responses:
+        '200':
+          description: XLSX-file
+          headers:
+            'Content-Disposition: attachment; filename="file.xlsx"':
+              schema:
+                type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  /file/rejected:
+    get:
+      summary: Отчет об отклоненных объединениях
+      tags: []
+      responses:
+        '200':
+          description: XLSX-file
+          headers:
+            'Content-Disposition: attachment; filename="file.xlsx"':
+              schema:
+                type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: ./models/error-message.v1.yaml
+  /migration/filter:
+    get:
+      summary: 'Вывод списка "золотых" записей по фильтру для мигратора'
+      tags: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: ./models/user.v1.yaml
+      parameters:
+        - schema:
+            type: array
+          in: query
+          name: id
+          description: 'набор идентификаторов пользователей UGR '
+        - schema:
+            type: string
+          in: query
+          name: fio
+          description: ФИО
+        - schema:
+            type: string
+          in: query
+          name: gender
+          description: Пол
+        - schema:
+            type: string
+          in: query
+          name: birth_day
+          description: Дата рождения
+        - schema:
+            type: string
+          in: query
+          name: birth_place
+          description: Место рождения
+        - schema:
+            type: string
+          in: query
+          name: citizenship
+          description: Гражданство
+        - schema:
+            type: string
+          in: query
+          name: snils
+          description: СНИЛС
+        - schema:
+            type: string
+          in: query
+          name: doc_type
+        - schema:
+            type: string
+          in: query
+          name: doc_series
+        - schema:
+            type: string
+          in: query
+          name: doc_number
+        - schema:
+            type: string
+          in: query
+          name: doc_country
+        - schema:
+            type: string
+          in: query
+          name: doc_issuer
+        - schema:
+            type: string
+          in: query
+          name: doc_issue_date
+        - schema:
+            type: string
+          in: query
+          name: doc_expired_date
+        - schema:
+            type: string
+          in: query
+          name: updated
+          description: метка обновления записи
+        - schema:
+            type: string
+          in: query
+          name: system_id
+          description: Наименование системы ДБО
+        - schema:
+            type: string
+          in: query
+          description: ID пользователя в системе ДБО
+          name: system_user_id
+components:
+  schemas: {}

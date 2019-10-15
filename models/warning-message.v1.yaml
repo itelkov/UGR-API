@@ -1,0 +1,15 @@
+title: WarningMessage
+type: object
+description: WarningMessage
+x-examples: {}
+properties:
+  text:
+    type: string
+    description: Текст сообщения
+  type:
+    type: string
+    default: WARNING
+    description: WARNING
+required:
+  - text
+  - type

@@ -1,0 +1,11 @@
+title: Child
+type: object
+properties:
+  id:
+    type: integer
+  fio:
+    type: string
+  certificate:
+    type: array
+    items:
+      $ref: ./certificate.v1.yaml
